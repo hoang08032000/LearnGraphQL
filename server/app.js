@@ -1,33 +1,45 @@
+require("dotenv").config();
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
+
+const PORT = process.env.PORT;
+
+const mongoose = require("mongoose");
 
 /// Load schema and resolvers
 const typeDefs = require("./schema/schema");
 const resolvers = require("./resolver/resolver");
 
-// const server = new ApolloServer({
-//     typeDefs,
-//     resolvers,
-// });
+// Load DB methods
+const mongoDataMethods = require("./data/db");
 
-// const app = express();
+/// connnect to mongoose
+const connectDB = async () => {
+    try {
+        await mongoose.connect(
+            `mongodb+srv://${process.env.USERNAME_DB}:${process.env.PASSWORD_DB}@cluster0.bzzoe.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
+        );
+        console.log("~~~ MongoDB connected ~~~~");
+    } catch (error) {
+        console.log(error.message);
+        process.exit(1);
+    }
+};
 
-// await server.start();
-
-// server.applyMiddleware({ app });
-
-// app.listen(8080, () => {
-//     console.log(`Server ready at http"//localhost/8080/${server.graphqlPath}`);
-// });
+connectDB();
 
 async function startApolloServer(typeDefs, resolvers) {
-    const server = new ApolloServer({ typeDefs, resolvers });
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+        context: () => ({ mongoDataMethods }),
+    });
     const app = express();
     await server.start();
     server.applyMiddleware({ app });
 
-    app.listen(4000, () => {
-        console.log(`Server is listening on port 4000${server.graphqlPath}`);
+    app.listen(PORT, () => {
+        console.log(`Server is listening on port ${PORT}${server.graphqlPath}`);
     });
 }
 

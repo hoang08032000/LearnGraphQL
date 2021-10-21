@@ -29,7 +29,6 @@ const resolvers = {
 
     Author: {
         books: async ({ id }, args, { mongoDataMethods }) => {
-            console.log(id)
             return await mongoDataMethods.getAllBooks({ authorId: id });
         },
     },
